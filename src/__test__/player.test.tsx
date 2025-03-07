@@ -1,4 +1,5 @@
-import { logRoles, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent, { UserEvent } from "@testing-library/user-event";
 import Player from "../Components/Player";
 
 const getPlayerElements = () => {
@@ -12,53 +13,66 @@ const getPlayerElements = () => {
   };
 };
 
-test("player info and button render", () => {
-  render(<Player name="test" symbol="X" />);
-  screen.debug(); // This will log the HTML to help debug
+describe("Player component", () => {
+  let user: UserEvent;
 
-  const {
-    playerListItem,
-    playerName,
-    playerInput,
-    playerSymbol,
-    editButton,
-    saveButton,
-  } = getPlayerElements();
+  beforeEach(() => {
+    user = userEvent.setup();
+    render(<Player defaultName="test" symbol="X" />);
+  });
+  test("should render player name, symbol and edit button,", () => {
+    const {
+      playerListItem,
+      playerName,
+      playerInput,
+      playerSymbol,
+      editButton,
+      saveButton,
+    } = getPlayerElements();
 
-  expect(playerListItem).toBeInTheDocument();
-  expect(playerName).toBeInTheDocument();
-  expect(playerInput).not.toBeInTheDocument();
-  expect(playerSymbol).toBeInTheDocument();
-  expect(editButton).toBeInTheDocument();
-  expect(saveButton).not.toBeInTheDocument();
+    expect(playerListItem).toBeInTheDocument();
+    expect(playerName).toBeInTheDocument();
+    expect(playerInput).not.toBeInTheDocument();
+    expect(playerSymbol).toBeInTheDocument();
+    expect(editButton).toBeInTheDocument();
+    expect(saveButton).not.toBeInTheDocument();
+  });
+  test("should show input field and save button when edit button is clicked", async () => {
+    const { editButton } = getPlayerElements();
+    expect(editButton).toBeInTheDocument();
+    await user.click(editButton!);
+    expect(screen.queryByRole("textbox")!).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /save/i })!
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /edit/i })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/test/i)).not.toBeInTheDocument();
+  });
 
-  logRoles(document.body);
+  test("should clear and type in the input field", async () => {
+    const { editButton } = getPlayerElements();
+    await user.click(editButton!);
+    await user.clear(screen.queryByRole("textbox")!);
+    expect(screen.queryByRole("textbox")!).toHaveValue("");
+    await user.type(screen.queryByRole("textbox")!, "new name");
+    expect(screen.queryByRole("textbox")!).toHaveValue("new name");
+  });
+
+  test("should show player name and edit button when save button is clicked", async () => {
+    const { editButton } = getPlayerElements();
+    await user.click(editButton!);
+    await user.clear(screen.queryByRole("textbox")!);
+    await user.type(screen.queryByRole("textbox")!, "new name");
+    await user.click(screen.queryByRole("button", { name: /save/i })!);
+    expect(screen.queryByText(/new name/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /edit/i })!
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /save/i })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")!).not.toBeInTheDocument();
+  });
 });
-// import { render, screen, fireEvent } from "@testing-library/react";
-// import Player from "../Components/Player";
-
-// describe("Player component button functionality", () => {
-//   test("toggles editing state when Edit button is clicked", () => {
-//     render(<Player name="test" symbol="X" />);
-
-//     // Initially, the player's name should be displayed as text
-//     expect(screen.getByText("test")).toBeInTheDocument();
-//     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-
-//     // Click the Edit button
-//     const editButton = screen.getByRole("button", { name: /edit/i });
-//     fireEvent.click(editButton);
-
-//     // After clicking, the input field should be displayed with the player's name
-//     const inputField = screen.getByRole("textbox");
-//     expect(inputField).toBeInTheDocument();
-//     expect(inputField).toHaveValue("test");
-
-//     // Click the Edit button again to toggle back
-//     fireEvent.click(editButton);
-
-//     // The input field should disappear, and the player's name should be displayed again
-//     expect(screen.getByText("test")).toBeInTheDocument();
-//     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-//   });
-// });
