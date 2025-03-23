@@ -1,20 +1,21 @@
 import { PlayerProps, usePlayerUtils } from "../utils";
 
-const Player = ({ defaultName, symbol }: PlayerProps) => {
-  const { isEditing, onHandleEdit, onHandleNameChange, playerName } =
+const Player = ({ defaultName, symbol, isActive }: PlayerProps) => {
+  const { isEditing, playerName, onHandleNameChange, onHandleEdit } =
     usePlayerUtils(defaultName);
-  const playerEditName = isEditing ? (
-    <input value={playerName} onChange={onHandleNameChange} />
-  ) : (
+
+  const player = !isEditing ? (
     <span className="player-name">{playerName}</span>
+  ) : (
+    <input value={playerName} onChange={onHandleNameChange} />
   );
 
   return (
-    <li>
+    <li className={isActive ? "active" : ""}>
       <span className="player">
-        {playerEditName}
+        {player}
         <span className="Player-symbol">{symbol}</span>
-        <button onClick={onHandleEdit}>{isEditing ? "Save" : "Edit"}</button>
+        <button onClick={onHandleEdit}>{!isEditing ? "Edit" : "Save"}</button>
       </span>
     </li>
   );
