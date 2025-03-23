@@ -3,9 +3,8 @@ import { useState } from "react";
 export type PlayerProps = {
   defaultName: string;
   symbol: "X" | "O";
+  isActive?: boolean;
 };
-
-// export type PlayerNameOnly = Pick<PlayerProps, "playerName">;
 
 export const usePlayerUtils = (defaultName: string) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,9 +14,18 @@ export const usePlayerUtils = (defaultName: string) => {
     setIsEditing((prev) => !prev);
   };
   const onHandleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     setPlayerName(e.target.value);
   };
 
   return { onHandleEdit, isEditing, playerName, onHandleNameChange };
+};
+
+export const useCurrentPlayer = () => {
+  const [currentPlayer, setCurrentPlayer] = useState<"X" | "O">("X");
+
+  const switchPlayer = () => {
+    setCurrentPlayer((prev) => (prev === "X" ? "O" : "X"));
+  };
+
+  return { currentPlayer, switchPlayer };
 };

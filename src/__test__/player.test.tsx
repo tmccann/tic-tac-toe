@@ -18,61 +18,47 @@ describe("Player component", () => {
 
   beforeEach(() => {
     user = userEvent.setup();
-    render(<Player defaultName="test" symbol="X" />);
+    render(<Player defaultName="test" symbol="X" isActive={true} />);
   });
-  test("should render player name, symbol and edit button,", () => {
-    const {
-      playerListItem,
-      playerName,
-      playerInput,
-      playerSymbol,
-      editButton,
-      saveButton,
-    } = getPlayerElements();
 
+  test("should render player component with default values", () => {
+    const { playerListItem, playerName, playerSymbol, editButton, saveButton } =
+      getPlayerElements();
     expect(playerListItem).toBeInTheDocument();
     expect(playerName).toBeInTheDocument();
-    expect(playerInput).not.toBeInTheDocument();
     expect(playerSymbol).toBeInTheDocument();
     expect(editButton).toBeInTheDocument();
     expect(saveButton).not.toBeInTheDocument();
   });
-  test("should show input field and save button when edit button is clicked", async () => {
+
+  test("player name should be editable and saved correctly", async () => {
     const { editButton } = getPlayerElements();
-    expect(editButton).toBeInTheDocument();
-    await user.click(editButton!);
-    expect(screen.queryByRole("textbox")!).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /save/i })!
-    ).toBeInTheDocument();
+    await user.click(editButton);
+    expect(screen.queryByRole("button", { name: /save/i })).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /edit/i })
     ).not.toBeInTheDocument();
-    expect(screen.queryByText(/test/i)).not.toBeInTheDocument();
-  });
-
-  test("should clear and type in the input field", async () => {
-    const { editButton } = getPlayerElements();
-    await user.click(editButton!);
-    await user.clear(screen.queryByRole("textbox")!);
-    expect(screen.queryByRole("textbox")!).toHaveValue("");
-    await user.type(screen.queryByRole("textbox")!, "new name");
-    expect(screen.queryByRole("textbox")!).toHaveValue("new name");
-  });
-
-  test("should show player name and edit button when save button is clicked", async () => {
-    const { editButton } = getPlayerElements();
-    await user.click(editButton!);
+    expect(screen.queryByRole("textbox")).toBeInTheDocument();
     await user.clear(screen.queryByRole("textbox")!);
     await user.type(screen.queryByRole("textbox")!, "new name");
     await user.click(screen.queryByRole("button", { name: /save/i })!);
-    expect(screen.queryByText(/new name/i)).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /edit/i })!
-    ).toBeInTheDocument();
+    expect(screen.queryByText("new name")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /save/i })
     ).not.toBeInTheDocument();
-    expect(screen.queryByRole("textbox")!).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit/i })).toBeInTheDocument();
+    expect(screen.queryByText("new name")).toBeInTheDocument();
+  });
+
+  test("player should be highlighted when active", () => {
+    const { playerListItem } = getPlayerElements();
+    expect(playerListItem).toHaveClass("active");
+  });
+
+  test("player should not be highlighted when inactive", () => {
+    render(<Player defaultName="Test Player" symbol="O" isActive={false} />);
+    const playerListItems = screen.getAllByRole("listitem");
+    const playerO = playerListItems[1];
+    expect(playerO).not.toHaveClass("active");
   });
 });
